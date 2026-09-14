@@ -1,5 +1,7 @@
 # Sistema de cadastro e gerenciamento
-pessoas = []
+import json
+with open ('sistema-cadastro/dados.json', 'r', encoding = 'utf-8') as arquivo:
+    pessoas = json.load (arquivo)
 while True:
     print ('==========SISTEMA DE CADASTRO==========')
     print ('1 - Cadastrar a pessoa \n 2 - Listar cadastros \n 3 - Buscar cadastro \n 4 - Remover cadastro \n 5 - Lista de atendimentos \n 0 - Sair')
@@ -28,6 +30,8 @@ while True:
             'urgencia': urgencia
         }
         pessoas.append (pessoa)
+        with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
+            json.dump (pessoas, arquivo, ensure_ascii=False)
         print ('Os dados cadastrados são: \n', nome, '\n', idade, '\n', cidade, '\n', urgencia, '\n' )
     elif opção == 2:
         print ('Acessando cadastro...')
@@ -62,6 +66,8 @@ while True:
         for pessoa in pessoas:
             if pessoa ['nome'].lower () == remove.lower():
                 pessoas.remove(pessoa)
+                with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8')as arquivo:
+                    json.dump (pessoas,arquivo, ensure_ascii= False)
                 print ('Você acabou de remover do cadastro', pessoa ['nome'])
                 removeu = True
         if removeu == False:
