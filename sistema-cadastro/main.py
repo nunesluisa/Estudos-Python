@@ -2,13 +2,20 @@
 import json
 with open ('sistema-cadastro/dados.json', 'r', encoding = 'utf-8') as arquivo:
     pessoas = json.load (arquivo)
+with open ('sistema-cadastro/atendidos.json', 'r', encoding = 'utf-8')as arquivo:
+    atendidos = json.load (arquivo)
 while True:
     print ('==========SISTEMA DE CADASTRO==========')
-    print ('1 - Cadastrar a pessoa \n 2 - Listar cadastros \n 3 - Buscar cadastro \n 4 - Remover cadastro \n 5 - Lista de atendimentos \n 6 - Atender proximo ticket \n 7 - Editar cadastro \n 0 - Sair')
+    print ('1 - Cadastrar a pessoa \n 2 - Listar cadastros \n 3 - Buscar cadastro \n 4 - Remover cadastro \n 5 - Lista de atendimentos \n 6 - Atender proximo ticket \n 7 - Editar cadastro \n 8 - Listar atendidos \n 0 - Sair')
     opção = int (input ('Escolha uma opção: '))
     if opção == 1:
         nome = input ('Digite o nome:')
-        idade = int(input ('Digite a idade: '))
+        while True:
+            try: 
+                idade = int(input ('Digite a idade: '))
+                break
+            except ValueError:
+                print ('Idade inválida, por favor digite números')
         cidade = input ('Qual a cidade: ')
         while True: 
             urgencia = int (input('Qual a urgência do atendimento?\n 1 - baixa \n 2 - média \n 3 - alta: '))
@@ -37,7 +44,7 @@ while True:
         print ('Acessando cadastro...')
         print ('------------------')
         if len (pessoas) == 0:
-            print ('Não tem pessoas cadastradas \nVoltando ao inicio')
+             print ('Não tem pessoas cadastradas \nVoltando ao inicio')
         else:
             for pessoa in pessoas:
                 print (pessoa ['nome'])
@@ -102,9 +109,12 @@ while True:
             print ('A fila está vazia')
         else:
             print ('O próximo da fila é', fila [0]['nome'])
+            atendidos.append (fila[0])
             pessoas.remove (fila[0])
             with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
                 json.dump(pessoas, arquivo, ensure_ascii= False)
+            with open ('sistema-cadastro/atendidos.json', 'w', encoding = 'utf-8')as arquivo:
+                json.dump(atendidos, arquivo, ensure_ascii= False)
     elif opção == 7:
         editar = input ('Qual cadastro você deseja editar? ')
         achou = False
@@ -130,6 +140,14 @@ while True:
                     print ('você acabou de editar a urgêrcia para', urgencia_nova)
                 with open ('sistema-cadastro/dados.json', 'w', encoding= 'utf-8') as arquivo: 
                     json.dump (pessoas, arquivo, ensure_ascii= False)
+    elif opção == 8:
+        print ('Acessando a lista de atendidos')
+        print ('-----------------')
+        if len (atendidos) == 0:
+            print ('Não existe ninguém atendido no momento')
+        else:
+            for numero, atendido in enumerate (atendidos, start=1):
+                print (numero, '-', atendido ['nome'])
     elif opção == 0:
         print ('Você encerrou o cadastro!')
         break 
