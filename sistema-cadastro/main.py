@@ -4,6 +4,8 @@ with open ('sistema-cadastro/dados.json', 'r', encoding = 'utf-8') as arquivo:
     pessoas = json.load (arquivo)
 with open ('sistema-cadastro/atendidos.json', 'r', encoding = 'utf-8')as arquivo:
     atendidos = json.load (arquivo)
+with open ('sistema-cadastro/contador.json', 'r', encoding = 'utf-8')as arquivo:
+    contador = json.load (arquivo)
 def listar_atendidos (atendidos):
     print ('Acessando a lista de atendidos')
     print ('-----------------')
@@ -65,8 +67,8 @@ def listar_fila (pessoas):
         reverse=True
     )
     for numero, pessoa in enumerate (fila, start = 1):
-        print ('TICKET', numero, '-', pessoa ['nome'],':A urgência do atendimento é - ', pessoa ['urgencia'])
-def atender_ticket (pessoas):
+        print ('Posição', numero, '-','Ticket', pessoa ['ticket'], 'Nome', pessoa ['nome'],':A urgência do atendimento é - ', pessoa ['urgencia'])
+def atender_ticket (pessoas, atendidos):
     prioridades = {
                         'alta': 3,
                         'média': 2,
@@ -80,7 +82,7 @@ def atender_ticket (pessoas):
     if len(fila)==0:
         print ('A fila está vazia')
     else:
-        print ('O próximo da fila é', fila [0]['nome'])
+        print ('Atendendo Ticket', fila [0] ['ticket'],'-', fila [0]['nome'])
         atendidos.append (fila[0])
         pessoas.remove (fila[0])
         with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
@@ -112,7 +114,7 @@ def editar_cadastro (pessoas):
                 print ('você acabou de editar a urgêrcia para', urgencia_nova)
                 with open ('sistema-cadastro/dados.json', 'w', encoding= 'utf-8') as arquivo: 
                     json.dump (pessoas, arquivo, ensure_ascii= False)
-def cadastrar_pessoa (pessoas):
+def cadastrar_pessoa (pessoas, contador):
     nome = input ('Digite o nome:')
     while True:
         try: 
@@ -134,7 +136,9 @@ def cadastrar_pessoa (pessoas):
             break
         else:
             print ('Opção invalida')
+    contador ['ultimo_ticket'] = contador ['ultimo_ticket'] + 1
     pessoa= {
+            'ticket': contador ['ultimo_ticket'],
             'nome': nome,
             'idade': idade,
             'cidade': cidade,
@@ -143,13 +147,15 @@ def cadastrar_pessoa (pessoas):
     pessoas.append (pessoa)
     with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
         json.dump (pessoas, arquivo, ensure_ascii=False)
+    with open ('sistema-cadastro/contador.json', 'w', encoding = 'utf-8')as arquivo:
+        json.dump(contador, arquivo, ensure_ascii= False)
     print ('Os dados cadastrados são: \n', nome, '\n', idade, '\n', cidade, '\n', urgencia, '\n' )
 while True:
     print ('==========SISTEMA DE CADASTRO==========')
     print ('1 - Cadastrar a pessoa \n 2 - Listar cadastros \n 3 - Buscar cadastro \n 4 - Remover cadastro \n 5 - Lista de atendimentos \n 6 - Atender proximo ticket \n 7 - Editar cadastro \n 8 - Listar atendidos \n 0 - Sair')
     opção = int (input ('Escolha uma opção: '))
     if opção == 1:
-       cadastrar_pessoa (pessoas)
+       cadastrar_pessoa (pessoas, contador)
     elif opção == 2:
         listar_cadastro (pessoas)
     elif opção == 3:
@@ -159,7 +165,7 @@ while True:
     elif opção == 5:
         listar_fila (pessoas)
     elif opção == 6:
-        atender_ticket (pessoas)
+        atender_ticket (pessoas, atendidos)
     elif opção == 7:
         editar_cadastro (pessoas)
     elif opção == 8:
