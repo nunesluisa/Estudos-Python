@@ -1,11 +1,21 @@
 # Sistema de cadastro e gerenciamento
 import json
+from datetime import datetime
 with open ('sistema-cadastro/dados.json', 'r', encoding = 'utf-8') as arquivo:
     pessoas = json.load (arquivo)
 with open ('sistema-cadastro/atendidos.json', 'r', encoding = 'utf-8')as arquivo:
     atendidos = json.load (arquivo)
 with open ('sistema-cadastro/contador.json', 'r', encoding = 'utf-8')as arquivo:
     contador = json.load (arquivo)
+def salvar_pessoas (pessoas):
+    with open ('sistema-cadastro/dados.json', 'w',encoding = 'utf-8')as arquivo:
+        json.dump (pessoas, arquivo, ensure_ascii=False)
+def salvar_atendidos (atendidos):
+    with open ('sistema-cadastro/atendidos.json', 'w', endoding = 'utf-8')as arquivo:
+        json.dump (atendidos, arquivo, ensure_ascii=False)
+def contar_pessoas (contador):
+    with open ('sistema-cadastro/contador.json', 'w',encoding='utf-8') as arquivo:
+        json.dump (contador, arquivo, ensure_ascii=False)
 def listar_atendidos (atendidos):
     print ('Acessando a lista de atendidos')
     print ('-----------------')
@@ -47,10 +57,9 @@ def remover_cadastro (pessoas):
     for pessoa in pessoas:
         if pessoa ['nome'].lower () == remove.lower():
             pessoas.remove(pessoa)
-        with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8')as arquivo:
-            json.dump (pessoas,arquivo, ensure_ascii= False)
-            print ('Você acabou de remover do cadastro', pessoa ['nome'])
-            removeu = True
+        salvar_pessoas (pessoas)
+        print ('Você acabou de remover do cadastro', pessoa ['nome'])
+        removeu = True
         if removeu == False:
             print ('Não achamos esse cadastro para remover')
 def listar_fila (pessoas):
@@ -83,12 +92,12 @@ def atender_ticket (pessoas, atendidos):
         print ('A fila está vazia')
     else:
         print ('Atendendo Ticket', fila [0] ['ticket'],'-', fila [0]['nome'])
+        data_atendimento = datetime.now().strftime('%d/%m/%Y %H:%M')
+        fila [0]['data_atendimento'] = data_atendimento 
         atendidos.append (fila[0])
         pessoas.remove (fila[0])
-        with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
-            json.dump(pessoas, arquivo, ensure_ascii= False)
-        with open ('sistema-cadastro/atendidos.json', 'w', encoding = 'utf-8')as arquivo:
-            json.dump(atendidos, arquivo, ensure_ascii= False)
+        salvar_pessoas (pessoas)
+        salvar_atendidos (atendidos)
 def editar_cadastro (pessoas):
     editar = input ('Qual cadastro você deseja editar? ')
     achou = False
@@ -101,7 +110,12 @@ def editar_cadastro (pessoas):
                 pessoa ['nome'] = novo_nome
                 print ('Você acabou de editar o nome para', novo_nome)
             elif pessoa_editar == 2 :
-                idade_nova = int (input ('Qual a nova idade? '))
+                while True:
+                    try: 
+                        idade_nova = int (input ('Qual a nova idade? '))
+                        break
+                    except ValueError:
+                        print ('Por favor Digite números')
                 pessoa ['idade'] = idade_nova
                 print ('Você acabou de editar a idade para', idade_nova)
             elif pessoa_editar == 3:
@@ -112,10 +126,14 @@ def editar_cadastro (pessoas):
                 urgencia_nova = input ('Qual a urgência a ser atualizada? ')
                 pessoa ['urgencia'] = urgencia_nova
                 print ('você acabou de editar a urgêrcia para', urgencia_nova)
-                with open ('sistema-cadastro/dados.json', 'w', encoding= 'utf-8') as arquivo: 
-                    json.dump (pessoas, arquivo, ensure_ascii= False)
+                salvar_pessoas(pessoas)
 def cadastrar_pessoa (pessoas, contador):
-    nome = input ('Digite o nome:')
+    while True:
+        nome = input ('Digite o nome:')
+        if nome.replace(' ',' ').isalpha ():
+            break
+        else: 
+            print ('Digite somente letras')
     while True:
         try: 
             idade = int(input ('Digite a idade: '))
@@ -124,7 +142,12 @@ def cadastrar_pessoa (pessoas, contador):
             print ('Idade inválida, por favor digite números')
     cidade = input ('Qual a cidade: ')
     while True: 
-        urgencia = int (input('Qual a urgência do atendimento?\n 1 - baixa \n 2 - média \n 3 - alta: '))
+        while True:
+            try:
+                urgencia = int (input('Qual a urgência do atendimento?\n 1 - baixa \n 2 - média \n 3 - alta: '))
+                break
+            except ValueError:
+                print ('Por favor digite um número')
         if urgencia == 1:
             urgencia = 'baixa'
             break
@@ -137,23 +160,28 @@ def cadastrar_pessoa (pessoas, contador):
         else:
             print ('Opção invalida')
     contador ['ultimo_ticket'] = contador ['ultimo_ticket'] + 1
+    data_abertura = datetime.now().strftime('%d/%m/%Y %H:%M')
     pessoa= {
             'ticket': contador ['ultimo_ticket'],
             'nome': nome,
             'idade': idade,
             'cidade': cidade,
-            'urgencia': urgencia
+            'urgencia': urgencia,
+            'data_abertura': data_abertura
     }
     pessoas.append (pessoa)
-    with open ('sistema-cadastro/dados.json', 'w', encoding = 'utf-8') as arquivo:
-        json.dump (pessoas, arquivo, ensure_ascii=False)
-    with open ('sistema-cadastro/contador.json', 'w', encoding = 'utf-8')as arquivo:
-        json.dump(contador, arquivo, ensure_ascii= False)
+    salvar_pessoas (pessoas)
+    contar_pessoas (contador)
     print ('Os dados cadastrados são: \n', nome, '\n', idade, '\n', cidade, '\n', urgencia, '\n' )
 while True:
     print ('==========SISTEMA DE CADASTRO==========')
     print ('1 - Cadastrar a pessoa \n 2 - Listar cadastros \n 3 - Buscar cadastro \n 4 - Remover cadastro \n 5 - Lista de atendimentos \n 6 - Atender proximo ticket \n 7 - Editar cadastro \n 8 - Listar atendidos \n 0 - Sair')
-    opção = int (input ('Escolha uma opção: '))
+    while True:
+        try:
+            opção = int (input ('Escolha uma opção: '))
+            break
+        except ValueError:
+            print ('Por favor digite um número')
     if opção == 1:
        cadastrar_pessoa (pessoas, contador)
     elif opção == 2:
